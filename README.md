@@ -3,7 +3,7 @@ AWS IoT button invoked Chaos Gorilla - DR testing at the click of a button
 
 ********* USE AT YOUR OWN RISK AND WITH EXTREME CAUTION *********
 
-This is an intentionally destructive , all care not responsability taken. 
+This is intentionally destructive, all care and no responsability taken. 
 
 
 ## Description:
