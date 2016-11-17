@@ -8,19 +8,21 @@ import random
 
 print ('Loading function')
 
-# try capture the iot button
+# Capture IoT button clickType event
 def lambda_handler(event, context):
     clickType = event['clickType']
     print("Received event: " + json.dumps(event, indent=2))
     
     # randomize availability zone
-    region="ap-southeast-2"
-    az=random.choice(string.ascii_letters[0:3])
+    region="ap-southeast-2" ### <-- Edit this for your target AWS region
+    az=random.choice(string.ascii_letters[0:3]) ### <-- Edit [0:n] where '' is number of AZ's in your region
     randAz=region+az
+    print("Target Region: ",region)
+    print("Target Availability Zone: ",randAz)
     
     ec2 = boto3.resource('ec2')
     
-    # list all deployed instances in randAz into list instIds
+    # add all deployed instances in randAz to list instIds
     instances = ec2.instances.filter(
         Filters=[
             {
@@ -33,15 +35,16 @@ def lambda_handler(event, context):
             },
         ],
     )
-    
     instIds = []
     for instance in instances:
         instIds.append(instance.id)
     print ("\nAll instances in", randAz)
     print ("\n".join(instIds))
     
-    
-    # list ASG deployed instances in randAz into list asgInstIds
+    # add only ASG deployed instances in randAz into list asgInstIds
+    # any instance deployed with an ASG is tagged with Key='tag:aws:autoscaling:groupName', Value='<ASG Name>'
+    # we capture this by outputting all instances in our target AZ and filtering on the aboce Key with a wildcard Value.
+    # we also only want to instances in a steady or 'running' state.
     asgInstances = ec2.instances.filter(
         Filters=[
             {
@@ -58,38 +61,37 @@ def lambda_handler(event, context):
             },
         ],
     )
-    
     asgInstIds = []
     for instance in asgInstances:
         asgInstIds.append(instance.id)
-    print ("\nASG deployed instances in", randAz)
+    print ("\nASG deployed instances targeted for termination in", randAz)
     print ("\n".join(asgInstIds))
     
-    
-    
-    # diff the lists using set()
+    # Now diff the lists using set() and print output 
     nonAsg=(set(instIds)-set(asgInstIds))
-    print ("\nNon-ASG deployed instances in", randAz)
+    print ("\nInstances safe from the gorilla.")
+    print ("These instances have _not_ been deployed with autoscale groups and services may not auto-heal. You should do something about that...")
     print ("\n".join(nonAsg))
-    
-    
     
     '''
     Here comes the big bad stuff that terminates instances in asgInstIds
+    
+    A SINGLE clickType will run the gorilla in 'DryRun' safe-mode. DryRun checks whether you have the required permissions for the
+    action, without actually making the request, and provides an error response. If you have the required permissions, the error
+    response is DryRunOperation . Otherwise, it is UnauthorizedOperation
+    
+    A DOUBLE clickType event will unleash the gorilla, terminating all EC2 instances deployed using autoscale groups in our target AZ.
+    You'd better mean it when you do this, there's no going back!
     '''
-    
-    
-        
     if clickType == 'SINGLE':    
         for i in asgInstIds:
-            print ("\n**** ",i," The Gorilla is looking at you! ****\n")
-        #    asgInstTerminate = ec2.instances.terminate(InstanceIds=[i])
+            print ("\n**** ",i," The Gorilla is looking at you! But today you've survived. ****\n")
             asgInstTerminate = ec2.instances.terminate(DryRun=True,InstanceIds=[i])
     elif clickType == 'DOUBLE':
         for i in asgInstIds:
             print ("\n**** ",i," Has Been Terminated By The Gorilla ****\n")
             asgInstTerminate = ec2.instances.terminate(InstanceIds=[i])
     elif clickType == 'LONG':
-        print ("\n**** Stop sitting on the button ****\n")
+        print ("\n**** Let's go and disable any disableApiTermination protection :) - just kidding, we'll add this later") 
         
     
