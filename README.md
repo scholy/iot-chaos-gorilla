@@ -8,9 +8,22 @@ This is intentionally destructive, all care and no responsability taken.
 
 ## Description:
 iot-chaos-gorilla unleashes a 'Chaos Gorilla' and terminates EC2 instances in a random AWS availability zone.
-Currently, the gorilla only terminates 'running' instances deployed using autoscale groups (ASG). Instances deployed outside ASG's or in a 'pending', 'shutting-down', 'stopping' or 'stopped' state are ignored. Instances in a 'terminated' state, well ....
+Currently, the gorilla only terminates 'running' instances deployed using (or later added to) autoscale groups (ASG). Instances not associated with ASG's or in a 'pending', 'shutting-down', 'stopping' or 'stopped' state are ignored. Instances in a 'terminated' state, well ....
 
-A 'SINGLE' click event of the Gorilla Button will execute the sequence in DryRun mode, while a 'DOUBLE' click event is the real deal - KABOOM!. A 'LONG' click event will just tell you to get off your arse.
+A 'SINGLE' click event of the Gorilla Button will execute the sequence in DryRun mode, while a 'DOUBLE' click event is the real deal - KABOOM!. A 'LONG' click event does nothing at this stage.
+  
+## Pre-Req's:
+1. AWS IoT Button  
+2. iot-chaos-gorilla IAM role with permissions:  
+  * logs:CreateLogGroup  
+  * logs:CreateLogStream  
+  * logs:PutLogEvents  
+  * ec2:DeleteVolume  
+  * ec2:DescribeInstanceAttribute  
+  * ec2:DescribeInstances  
+  * ec2:DescribeVolumes  
+  * ec2:ModifyInstanceAttribute  
+  * ec2:TerminateInstances  
 
 ## How it works: 
 A click event on the IoT button is delivered via AWS IoT to a lambda function (gorilla.py). The lambda function identifies the click event then randomly selects an availability zone. With a target AZ, the function then grabs a list of all InstanceID's in a non-terminated state. The function then grabs a second list of InstanceID's that include the tag key `tag:aws:autoscaling:groupName`, value `*`. The `tag:aws:autoscaling:groupName` key is automatically applied to all instances deployed by an ASG. Diff the two lists and we now know:  
@@ -22,8 +35,9 @@ All of this is logged into stdout aka, cloudwatch. Finally, a simple `fo`r loop 
 
 
 TODO:  
-* clean up  
-* describe IAM policy req's  
+* ~~clean up~~  
+* ~~describe IAM policy req's~~  
 * (re)build with functions  
 * make multi-region - also need logic for diff number of AZ's  
 * make multi-account  
+* add LONG clickEvent 'test DR mode', turn off disableApiTermination, terminate all instances (even non-asg), delete all EBS volumes
