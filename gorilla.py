@@ -16,6 +16,23 @@ def az_func():
     randAz=region+az
     print("Target Region: ",region)
     print("Target Availability Zone: ",randAz)
+    
+# function to identify all instances in the target availability zone
+def inst_func():
+    global instIds
+    instances = ec2.instances.filter(
+        Filters=[
+            {
+                'Name': 'availability-zone',
+                'Values': [randAz]
+            },
+        ],
+    )
+    instIds = []
+    for instance in instances:
+        instIds.append(instance.id)
+    print ("\nAll instances in", randAz)
+    print ("\n".join(instIds))
 
 # Capture IoT button clickType event
 def lambda_handler(event, context):
@@ -35,7 +52,8 @@ def lambda_handler(event, context):
     az_func()
     
     ec2 = boto3.resource('ec2')
-    
+ 
+    ''' replaced by func_instIds
     # add all deployed instances in randAz to list instIds
     instances = ec2.instances.filter(
         Filters=[
@@ -54,6 +72,7 @@ def lambda_handler(event, context):
         instIds.append(instance.id)
     print ("\nAll instances in", randAz)
     print ("\n".join(instIds))
+    '''
     
     # add only ASG deployed instances in randAz into list asgInstIds
     # any instance deployed with an ASG is tagged with Key='tag:aws:autoscaling:groupName', Value='<ASG Name>'
