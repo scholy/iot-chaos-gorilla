@@ -8,17 +8,31 @@ import random
 
 print ('Loading function')
 
+# function to randomize availability zone
+def az_func():
+    global randAz
+    region="ap-southeast-2" ### <-- Edit this for your target AWS region
+    az=random.choice(string.ascii_letters[0:3]) ### <-- Edit [0:n] where '' is number of AZ's in your region
+    randAz=region+az
+    print("Target Region: ",region)
+    print("Target Availability Zone: ",randAz)
+
 # Capture IoT button clickType event
 def lambda_handler(event, context):
     clickType = event['clickType']
     print("Received event: " + json.dumps(event, indent=2))
     
+    ''' Replaced by az_func() function
     # randomize availability zone
     region="ap-southeast-2" ### <-- Edit this for your target AWS region
     az=random.choice(string.ascii_letters[0:3]) ### <-- Edit [0:n] where '' is number of AZ's in your region
     randAz=region+az
     print("Target Region: ",region)
     print("Target Availability Zone: ",randAz)
+    '''
+    
+    # call function to randomize AZ
+    az_func()
     
     ec2 = boto3.resource('ec2')
     
