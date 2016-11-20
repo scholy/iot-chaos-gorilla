@@ -34,6 +34,36 @@ def inst_func():
     print ("\nAll instances in", randAz)
     print ("\n".join(instIds))
 
+# function to identify Autoscale Group deployed instances in the target AZ
+def asgInst_func():
+    # add only ASG deployed instances in randAz into list asgInstIds
+    # any instance deployed with an ASG is tagged with Key='tag:aws:autoscaling:groupName', Value='<ASG Name>'
+    # we capture this by outputting all instances in our target AZ and filtering on the aboce Key with a wildcard Value.
+    # we also only want to instances in a steady or 'running' state.
+    global asgInstIds
+    asgInstances = ec2.instances.filter(
+        Filters=[
+            {
+                'Name': 'availability-zone',
+                'Values': [randAz]
+            },
+            {
+                'Name': 'tag:aws:autoscaling:groupName',
+                'Values': ['*']
+            },
+            {
+                'Name': 'instance-state-name',
+                'Values': ['running']
+            },
+        ],
+    )
+    asgInstIds = []
+    for instance in asgInstances:
+        asgInstIds.append(instance.id)
+    print ("\nASG deployed instances targeted for termination in", randAz)
+    print ("\n".join(asgInstIds))
+
+
 # Capture IoT button clickType event
 def lambda_handler(event, context):
     clickType = event['clickType']
@@ -52,7 +82,8 @@ def lambda_handler(event, context):
     az_func()
     
     ec2 = boto3.resource('ec2')
- 
+    
+    inst_func()
     ''' replaced by func_instIds
     # add all deployed instances in randAz to list instIds
     instances = ec2.instances.filter(
@@ -74,6 +105,8 @@ def lambda_handler(event, context):
     print ("\n".join(instIds))
     '''
     
+    asgInst_func()
+    '''
     # add only ASG deployed instances in randAz into list asgInstIds
     # any instance deployed with an ASG is tagged with Key='tag:aws:autoscaling:groupName', Value='<ASG Name>'
     # we capture this by outputting all instances in our target AZ and filtering on the aboce Key with a wildcard Value.
@@ -99,12 +132,14 @@ def lambda_handler(event, context):
         asgInstIds.append(instance.id)
     print ("\nASG deployed instances targeted for termination in", randAz)
     print ("\n".join(asgInstIds))
+    '''
     
     # Now diff the lists using set() and print output 
     nonAsg=(set(instIds)-set(asgInstIds))
     print ("\nInstances safe from the gorilla.")
     print ("These instances have _not_ been deployed with autoscale groups and services may not auto-heal. You should do something about that...")
     print ("\n".join(nonAsg))
+    
     
     '''
     Here comes the big bad stuff that terminates instances in asgInstIds
