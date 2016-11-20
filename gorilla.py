@@ -63,7 +63,14 @@ def asgInst_func():
     print ("\nASG deployed instances targeted for termination in", randAz)
     print ("\n".join(asgInstIds))
 
-
+def diffInst_func():
+    # Now diff the lists using set() and print output 
+    global nonAsg
+    nonAsg=(set(instIds)-set(asgInstIds))
+    print ("\nInstances safe from the gorilla.")
+    print ("These instances have _not_ been deployed with autoscale groups and services may not auto-heal. You should do something about that...")
+    print ("\n".join(nonAsg))
+    
 # Capture IoT button clickType event
 def lambda_handler(event, context):
     clickType = event['clickType']
@@ -134,12 +141,14 @@ def lambda_handler(event, context):
     print ("\n".join(asgInstIds))
     '''
     
+    diffInst_func()
+    '''
     # Now diff the lists using set() and print output 
     nonAsg=(set(instIds)-set(asgInstIds))
     print ("\nInstances safe from the gorilla.")
     print ("These instances have _not_ been deployed with autoscale groups and services may not auto-heal. You should do something about that...")
     print ("\n".join(nonAsg))
-    
+    '''
     
     '''
     Here comes the big bad stuff that terminates instances in asgInstIds
