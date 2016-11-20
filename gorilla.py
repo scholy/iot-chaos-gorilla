@@ -76,7 +76,7 @@ def lambda_handler(event, context):
     global ec2
     clickType = event['clickType']
     print("Received event: " + json.dumps(event, indent=2))
-        
+    
     # call function to randomize AZ
     az_func()
     
@@ -111,5 +111,4 @@ def lambda_handler(event, context):
             asgInstTerminate = ec2.instances.terminate(InstanceIds=[i])
     elif clickType == 'LONG':
         print ("\n**** Let's go and disable any disableApiTermination protection :) - just kidding, we'll add this later") 
-        
     
