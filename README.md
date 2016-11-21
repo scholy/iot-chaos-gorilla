@@ -37,7 +37,7 @@ All of this is logged into stdout aka, cloudwatch. Finally, a simple `fo`r loop 
 TODO:  
 * ~~clean up~~  
 * ~~describe IAM policy req's~~  
-* (re)build with functions  
+* ~~(re)build with functions~~  
 * make multi-region - also need logic for diff number of AZ's  
 * make multi-account  
 * add LONG clickEvent 'test DR mode', turn off disableApiTermination, terminate all instances (even non-asg), delete all EBS volumes
