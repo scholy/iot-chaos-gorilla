@@ -6,6 +6,7 @@ import json
 import string
 import random
 #import logging
+import sys
 
 print ('Loading function')
 
@@ -73,10 +74,11 @@ def diffInst_func():
     print ("\n".join(nonAsg))
     
 # Capture IoT button clickType event
-def lambda_handler(event, context):
+# def lambda_handler(event, context): # This is the default function called by AWS lambda
+def lambda_handler():
     global ec2
-    clickType = event['clickType']
-    print("Received event: " + json.dumps(event, indent=2))
+    clickType = 'SINGLE' # change to SINGLE, DOUBLE or LONG to represent your test case
+    print("Received event: ", clickType)
     
     # call function to randomize AZ
     az_func()
@@ -113,3 +115,4 @@ def lambda_handler(event, context):
     elif clickType == 'LONG':
         print ("\n**** Let's go and disable any disableApiTermination protection :) - just kidding, we'll add this later") 
     
+lambda_handler() # needed to run the lambda_handler function, comment/delete this line for use in AWS Lambda
