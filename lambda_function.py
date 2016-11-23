@@ -8,6 +8,14 @@ is to return only the AZ's for the region the lambda functions is running in, li
 AWS_DEFAULT_REGION and/or AWS_REGION. Either way, the returned results are limited to the 'local' region. 
 Setting multiAZ = 'True' will allow the gorilla to spread his wings and go global.
 
+Multi-AZ: Not yet implemented. TODO ... modify randTarget function to allow 1 target AZ per region
+
+SETUP REQUIRED:
+When configure your lambda function, create 2 environment variables called multiRegion and multiAZ. failure to set the variables results in a
+module load error.
+
+Describing regions and zones in the region (especially remote regions) takes time, if you see timeout errors, increase the lambda_function 
+timesout settings unders 'Advanced' on the Configuratin tab. 
 '''
 
 import boto3
@@ -24,19 +32,6 @@ multiRegion = os.environ['multiRegion']
 
 # targets an availability zone in every region, requires multiRegion=True - could hurt!
 multiAZ = os.environ['multiAZ'] 
-
-
-'''
-
-PARSE AND ADD THIS
-
-
-def lambda_handler(event, context):
-
-    
-    #print (multiAZ)
-
-'''
 
 # function to generate list of regions
 def regions_func():
@@ -83,7 +78,6 @@ def randTarget_func():
     randZone = random.choice(zoneNames)
     print("Our randomized target availability zone is", randZone)
     
-
 # function to randomize availability zone
 def az_func():
     global randAz
@@ -146,7 +140,7 @@ def diffInst_func():
     print ("\nInstances safe from the gorilla.")
     print ("These instances have _not_ been deployed with autoscale groups and services may not auto-heal. You should do something about that...")
     print ("\n".join(nonAsg))
-    
+
 # Capture IoT button clickType event
 def lambda_handler(event, context):
     global ec2
@@ -157,7 +151,7 @@ def lambda_handler(event, context):
     if multiAZ == 'True' and multiRegion != 'True':
         error_code='multiRegion = True is required for multiAZ'
         return error_code
-        
+    
     # call function to randomize AZ
     #az_func()
     randTarget_func()
@@ -193,4 +187,3 @@ def lambda_handler(event, context):
             asgInstTerminate = ec2.instances.terminate(InstanceIds=[i])
     elif clickType == 'LONG':
         print ("\n**** Let's go and disable any disableApiTermination protection :) - just kidding, we'll add this later") 
-    
