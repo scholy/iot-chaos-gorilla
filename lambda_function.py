@@ -61,7 +61,7 @@ def zone_func():
     print("\n".join(zoneNames))
 
 # function to randomize both region and zone
-def randTarget():    
+def randTarget_func():    
     global randRegion
     global randZones
     if multiRegion == 'True':
@@ -100,19 +100,19 @@ def inst_func():
         Filters=[
             {
                 'Name': 'availability-zone',
-                'Values': [randAz]
+                'Values': [randZone]
             },
         ],
     )
     instIds = []
     for instance in instances:
         instIds.append(instance.id)
-    print ("\nAll instances in", randAz)
+    print ("\nAll instances in", randZone)
     print ("\n".join(instIds))
 
 # function to identify Autoscale Group deployed instances in the target AZ
 def asgInst_func():
-    # add only ASG deployed instances in randAz into list asgInstIds
+    # add only ASG deployed instances in randZone into list asgInstIds
     # any instance deployed with an ASG is tagged with Key='tag:aws:autoscaling:groupName', Value='<ASG Name>'
     # we capture this by outputting all instances in our target AZ and filtering on the aboce Key with a wildcard Value.
     # we also only want to instances in a steady or 'running' state.
@@ -121,7 +121,7 @@ def asgInst_func():
         Filters=[
             {
                 'Name': 'availability-zone',
-                'Values': [randAz]
+                'Values': [randZone]
             },
             {
                 'Name': 'tag:aws:autoscaling:groupName',
@@ -136,7 +136,7 @@ def asgInst_func():
     asgInstIds = []
     for instance in asgInstances:
         asgInstIds.append(instance.id)
-    print ("\nASG deployed instances targeted for termination in", randAz)
+    print ("\nASG deployed instances targeted for termination in", randZone)
     print ("\n".join(asgInstIds))
 
 def diffInst_func():
@@ -159,7 +159,8 @@ def lambda_handler(event, context):
         return error_code
         
     # call function to randomize AZ
-    az_func()
+    #az_func()
+    randTarget_func()
     
     ec2 = boto3.resource('ec2')
     
