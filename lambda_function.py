@@ -63,7 +63,7 @@ def zone_func():
 # function to randomize both region and zone
 def randTarget_func():    
     global randRegion
-    global randZones
+    global randZone
     if multiRegion == 'True':
         print("Randomizing the Region...")
         regions_func()
