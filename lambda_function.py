@@ -1,6 +1,25 @@
 from __future__ import print_function
 
+'''
+TODO: White setup/howto in here...
+
+Multi-Region: the apparent behavior of lambda when describing ec2 availablity zones (boto3 ~ client.describe_availability_zones) 
+is to return only the AZ's for the region the lambda functions is running in, likely the results of the reserved variable 
+AWS_DEFAULT_REGION and/or AWS_REGION. Either way, the returned results are limited to the 'local' region. 
+Setting multiAZ = 'True' will allow the gorilla to spread his wings and go global.
+
+Multi-AZ: Not yet implemented. TODO ... modify randTarget function to allow 1 target AZ per region
+
+SETUP REQUIRED:
+When configure your lambda function, create 2 environment variables called multiRegion and multiAZ. failure to set the variables results in a
+module load error.
+
+Describing regions and zones in the region (especially remote regions) takes time, if you see timeout errors, increase the lambda_function 
+timesout settings unders 'Advanced' on the Configuratin tab. 
+'''
+
 import boto3
+import os
 import json
 import string
 import random
@@ -8,6 +27,57 @@ import random
 
 print ('Loading function')
 
+# allows for target in any region
+multiRegion = os.environ['multiRegion'] 
+
+# targets an availability zone in every region, requires multiRegion=True - could hurt!
+multiAZ = os.environ['multiAZ'] 
+
+# function to generate list of regions
+def regions_func():
+    global regionNames
+    client = boto3.client('ec2')
+    regions = client.describe_regions()['Regions']
+    regionNames = []
+    for region in regions:
+        region_name=region['RegionName']
+        regionNames.append(region_name)
+    #print("\n".join(regionNames))
+
+# function to generate list of availability zones
+def zone_func():
+    global zoneNames
+    # client = boto3.client('ec2') # this should be a global in lambda_handler
+    zones = randClient.describe_availability_zones()['AvailabilityZones']
+    zoneName = []
+    for zone in zones:
+        zone_name=zone['ZoneName']
+        zoneNames.append(zone_name)
+    print("\n".join(zoneNames))
+
+# function to randomize both region and zone
+def randTarget_func():    
+    global randRegion
+    global randZone
+    if multiRegion == 'True':
+        print("Randomizing the Region...")
+        regions_func()
+        randRegion = random.choice(regionNames)
+    else:
+        print("multiRegion != True, not ranomizing")
+        session=boto3.session.Session()
+        randRegion=session.region_name
+    print ("\nTarget Region is: ", randRegion)
+    print("Randomizing the Availability Zone in ",randRegion)
+    randClient = boto3.client('ec2', region_name=randRegion)
+    zones = randClient.describe_availability_zones()['AvailabilityZones']
+    zoneNames = []
+    for zone in zones:
+        zone_name=zone['ZoneName']
+        zoneNames.append(zone_name)
+    randZone = random.choice(zoneNames)
+    print("Our randomized target availability zone is", randZone)
+    
 # function to randomize availability zone
 def az_func():
     global randAz
@@ -24,19 +94,19 @@ def inst_func():
         Filters=[
             {
                 'Name': 'availability-zone',
-                'Values': [randAz]
+                'Values': [randZone]
             },
         ],
     )
     instIds = []
     for instance in instances:
         instIds.append(instance.id)
-    print ("\nAll instances in", randAz)
+    print ("\nAll instances in", randZone)
     print ("\n".join(instIds))
 
 # function to identify Autoscale Group deployed instances in the target AZ
 def asgInst_func():
-    # add only ASG deployed instances in randAz into list asgInstIds
+    # add only ASG deployed instances in randZone into list asgInstIds
     # any instance deployed with an ASG is tagged with Key='tag:aws:autoscaling:groupName', Value='<ASG Name>'
     # we capture this by outputting all instances in our target AZ and filtering on the aboce Key with a wildcard Value.
     # we also only want to instances in a steady or 'running' state.
@@ -45,7 +115,7 @@ def asgInst_func():
         Filters=[
             {
                 'Name': 'availability-zone',
-                'Values': [randAz]
+                'Values': [randZone]
             },
             {
                 'Name': 'tag:aws:autoscaling:groupName',
@@ -60,7 +130,7 @@ def asgInst_func():
     asgInstIds = []
     for instance in asgInstances:
         asgInstIds.append(instance.id)
-    print ("\nASG deployed instances targeted for termination in", randAz)
+    print ("\nASG deployed instances targeted for termination in", randZone)
     print ("\n".join(asgInstIds))
 
 def diffInst_func():
@@ -70,15 +140,21 @@ def diffInst_func():
     print ("\nInstances safe from the gorilla.")
     print ("These instances have _not_ been deployed with autoscale groups and services may not auto-heal. You should do something about that...")
     print ("\n".join(nonAsg))
-    
+
 # Capture IoT button clickType event
 def lambda_handler(event, context):
     global ec2
     clickType = event['clickType']
     print("Received event: " + json.dumps(event, indent=2))
     
+    # error checking multiRegion == Ture if multiAZ == True
+    if multiAZ == 'True' and multiRegion != 'True':
+        error_code='multiRegion = True is required for multiAZ'
+        return error_code
+    
     # call function to randomize AZ
-    az_func()
+    #az_func()
+    randTarget_func()
     
     ec2 = boto3.resource('ec2')
     
@@ -111,4 +187,3 @@ def lambda_handler(event, context):
             asgInstTerminate = ec2.instances.terminate(InstanceIds=[i])
     elif clickType == 'LONG':
         print ("\n**** Let's go and disable any disableApiTermination protection :) - just kidding, we'll add this later") 
-    
