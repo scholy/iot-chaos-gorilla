@@ -8,6 +8,7 @@ Multi-Region: the apparent behavior of lambda when describing ec2 availablity zo
 '''
 
 import boto3
+import os
 import json
 import string
 import random
@@ -15,16 +16,49 @@ import random
 
 print ('Loading function')
 
+# allows for target in any region
+multiRegion = os.environ['multiRegion'] 
+
+# targets an availability zone in every region, requires multiRegion=True - could hurt!
+multiAZ = os.environ['multiAZ'] 
+
+
+'''
+
+PARSE AND ADD THIS
+
+
+def lambda_handler(event, context):
+    if multiAZ == 'True' and multiRegion != 'True':
+        error_code='multiRegion = True is required for multiAZ'
+        return error_code
+    global randRegion
+    global randZones
+    if multiRegion == 'True':
+        print("Randomizing the Region...")
+        regions_func()
+        randRegion = random.choice(regionNames)
+    else:
+        print("multiRegion != True, not ranomizing")
+        session=boto3.session.Session()
+        randRegion=session.region_name
+    
+    print (randRegion)
+    
+    #print (multiAZ)
+
+'''
+
 # function to generate list of regions
-def region_func():
+def regions_func():
     global regionNames
-    client = boto3.client('ec2') # this should be a global in lambda_handler
+    client = boto3.client('ec2')
     regions = client.describe_regions()['Regions']
     regionNames = []
     for region in regions:
         region_name=region['RegionName']
         regionNames.append(region_name)
-    print("\n".join(regionNames))
+    #print("\n".join(regionNames))
 
 # function to generate list of availability zones
 def zone_func():
