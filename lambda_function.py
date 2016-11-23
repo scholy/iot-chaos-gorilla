@@ -8,6 +8,18 @@ import random
 
 print ('Loading function')
 
+# function to generate list of regions
+def region_func():
+    global regionNames
+    client = boto3.client('ec2')
+    regions = client.describe_regions()['Regions']
+    regionNames = []
+    for region in regions:
+        region_name=region['RegionName']
+        regionNames.append(region_name)
+    print("\n".join(regionNames))
+
+
 # function to randomize availability zone
 def az_func():
     global randAz
