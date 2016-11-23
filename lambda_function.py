@@ -3,7 +3,10 @@ from __future__ import print_function
 '''
 TODO: White setup/howto in here...
 
-Multi-Region: the apparent behavior of lambda when describing ec2 availablity zones (boto3 ~ client.describe_availability_zones) is to return only the AZ's for the region the lambda functions is running in, likely the results of the reserved variable AWS_DEFAULT_REGION and/or AWS_REGION. Either way, the returned results are limited to the 'local' region. Setting multiAZ = 'True' will allow the gorilla to spread his wings and go global.
+Multi-Region: the apparent behavior of lambda when describing ec2 availablity zones (boto3 ~ client.describe_availability_zones) 
+is to return only the AZ's for the region the lambda functions is running in, likely the results of the reserved variable 
+AWS_DEFAULT_REGION and/or AWS_REGION. Either way, the returned results are limited to the 'local' region. 
+Setting multiAZ = 'True' will allow the gorilla to spread his wings and go global.
 
 '''
 
@@ -29,19 +32,7 @@ PARSE AND ADD THIS
 
 
 def lambda_handler(event, context):
-    
-    global randRegion
-    global randZones
-    if multiRegion == 'True':
-        print("Randomizing the Region...")
-        regions_func()
-        randRegion = random.choice(regionNames)
-    else:
-        print("multiRegion != True, not ranomizing")
-        session=boto3.session.Session()
-        randRegion=session.region_name
-    
-    print (randRegion)
+
     
     #print (multiAZ)
 
@@ -70,11 +61,27 @@ def zone_func():
     print("\n".join(zoneNames))
 
 # function to randomize both region and zone
-def randClient_func():
-    global randClinet
-    randRegion = random.choice(regionNames)
-    print(randRegion)
+def randTarget():    
+    global randRegion
+    global randZones
+    if multiRegion == 'True':
+        print("Randomizing the Region...")
+        regions_func()
+        randRegion = random.choice(regionNames)
+    else:
+        print("multiRegion != True, not ranomizing")
+        session=boto3.session.Session()
+        randRegion=session.region_name
+    print ("\nTarget Region is: ", randRegion)
+    print("Randomizing the Availability Zone in ",randRegion)
     randClient = boto3.client('ec2', region_name=randRegion)
+    zones = randClient.describe_availability_zones()['AvailabilityZones']
+    zoneNames = []
+    for zone in zones:
+        zone_name=zone['ZoneName']
+        zoneNames.append(zone_name)
+    randZone = random.choice(zoneNames)
+    print("Our randomized target availability zone is", randZone)
     
 
 # function to randomize availability zone
