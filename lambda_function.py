@@ -29,9 +29,7 @@ PARSE AND ADD THIS
 
 
 def lambda_handler(event, context):
-    if multiAZ == 'True' and multiRegion != 'True':
-        error_code='multiRegion = True is required for multiAZ'
-        return error_code
+    
     global randRegion
     global randZones
     if multiRegion == 'True':
@@ -148,6 +146,11 @@ def lambda_handler(event, context):
     clickType = event['clickType']
     print("Received event: " + json.dumps(event, indent=2))
     
+    # error checking multiRegion == Ture if multiAZ == True
+    if multiAZ == 'True' and multiRegion != 'True':
+        error_code='multiRegion = True is required for multiAZ'
+        return error_code
+        
     # call function to randomize AZ
     az_func()
     
