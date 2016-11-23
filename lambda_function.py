@@ -1,5 +1,12 @@
 from __future__ import print_function
 
+'''
+TODO: White setup/howto in here...
+
+Multi-Region: the apparent behavior of lambda when describing ec2 availablity zones (boto3 ~ client.describe_availability_zones) is to return only the AZ's for the region the lambda functions is running in, likely the results of the reserved variable AWS_DEFAULT_REGION and/or AWS_REGION. Either way, the returned results are limited to the 'local' region. Setting multiAZ = 'True' will allow the gorilla to spread his wings and go global.
+
+'''
+
 import boto3
 import json
 import string
@@ -11,7 +18,7 @@ print ('Loading function')
 # function to generate list of regions
 def region_func():
     global regionNames
-    client = boto3.client('ec2')
+    client = boto3.client('ec2') # this should be a global in lambda_handler
     regions = client.describe_regions()['Regions']
     regionNames = []
     for region in regions:
@@ -19,6 +26,24 @@ def region_func():
         regionNames.append(region_name)
     print("\n".join(regionNames))
 
+# function to generate list of availability zones
+def zone_func():
+    global zoneNames
+    # client = boto3.client('ec2') # this should be a global in lambda_handler
+    zones = randClient.describe_availability_zones()['AvailabilityZones']
+    zoneName = []
+    for zone in zones:
+        zone_name=zone['ZoneName']
+        zoneNames.append(zone_name)
+    print("\n".join(zoneNames))
+
+# function to randomize both region and zone
+def randClient_func():
+    global randClinet
+    randRegion = random.choice(regionNames)
+    print(randRegion)
+    randClient = boto3.client('ec2', region_name=randRegion)
+    
 
 # function to randomize availability zone
 def az_func():
