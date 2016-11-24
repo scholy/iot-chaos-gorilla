@@ -14,10 +14,7 @@ A 'SINGLE' click event of the Gorilla Button will execute the sequence in DryRun
   
 ## Pre-Req's:
 1. AWS IoT Button  
-2. Set 2 lambda environment variables to enable multi-region and multi-AZ logic. NB: multiAZ requires multi-region (i.e. 1 AZ per region, not multi-az in 1 region)
-  * multiRegion = True|False
-  * multiAZ = True|False
-3. iot-chaos-gorilla IAM role with permissions:  
+2. iot-chaos-gorilla IAM role with permissions:  
   * logs:CreateLogGroup  
   * logs:CreateLogStream  
   * logs:PutLogEvents  
@@ -43,7 +40,6 @@ TODO:
 * ~~(re)build with functions~~  
 * ~~make multi-region - also need logic for diff number of AZ's~~  
 * add logic for multi-az, i.e. 1 AZ per region if multi-region
-* add logic to only select random target from regions/AZ's with running instances  
 * make multi-account  
 * add LONG clickEvent 'test DR mode', turn off disableApiTermination, terminate all instances (even non-asg), delete all EBS volumes
 * clean up gorilla.py and add command line arg's support for clickType
