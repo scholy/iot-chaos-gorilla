@@ -38,7 +38,8 @@ TODO:
 * ~~clean up~~  
 * ~~describe IAM policy req's~~  
 * ~~(re)build with functions~~  
-* make multi-region - also need logic for diff number of AZ's  
+* ~~make multi-region - also need logic for diff number of AZ's~~  
+* add logic for multi-az, i.e. 1 AZ per region if multi-region
 * make multi-account  
 * add LONG clickEvent 'test DR mode', turn off disableApiTermination, terminate all instances (even non-asg), delete all EBS volumes
 * clean up gorilla.py and add command line arg's support for clickType
