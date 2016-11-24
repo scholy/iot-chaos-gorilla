@@ -14,7 +14,10 @@ A 'SINGLE' click event of the Gorilla Button will execute the sequence in DryRun
   
 ## Pre-Req's:
 1. AWS IoT Button  
-2. iot-chaos-gorilla IAM role with permissions:  
+2. Set 2 lambda environment variables to enable multi-region and multi-AZ logic. NB: multiAZ requires multi-region (i.e. 1 AZ per region, not multi-az in 1 region)
+  * multiRegion = True|False
+  * multiAZ = True|False
+3. iot-chaos-gorilla IAM role with permissions:  
   * logs:CreateLogGroup  
   * logs:CreateLogStream  
   * logs:PutLogEvents  
