@@ -149,8 +149,9 @@ def lambda_handler(event, context):
     
     # error checking multiRegion == Ture if multiAZ == True
     if multiAZ == 'True' and multiRegion != 'True':
-        error_code='multiRegion = True is required for multiAZ'
-        return error_code
+        #error_code='multiRegion = True is required for multiAZ'
+        #return error_code
+        raise Exception('multiRegion = True is required for multiAZ')
     
     # call function to randomize AZ
     #az_func()
