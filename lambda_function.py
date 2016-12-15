@@ -23,11 +23,8 @@ import random
 
 print ('Loading function')
 
-
-
 # allows for target in any region
-#multiRegion = os.environ['multiRegion']
-multiRegion = 'True'
+multiRegion = os.environ['multiRegion']
 
 # targets an availability zone in every region, requires multiRegion=True - could hurt!
 multiAZ = os.environ['multiAZ'] 
@@ -68,41 +65,6 @@ def regions_func():
     randAZ = random.choice(uniqAZ)
     print("Random AZ =", randAZ)
 
-'''
-# function to generate list of availability zones
-def zone_func():
-    global zoneNames
-    # client = boto3.client('ec2') # this should be a global in lambda_handler
-    zones = randClient.describe_availability_zones()['AvailabilityZones']
-    zoneName = []
-    for zone in zones:
-        zone_name=zone['ZoneName']
-        zoneNames.append(zone_name)
-    print("\n".join(zoneNames))
-# function to randomize both region and zone
-def randTarget_func():    
-    global randRegion
-    global randZone
-    if multiRegion == 'True':
-        print("Randomizing the Region...")
-        regions_func()
-        randRegion = random.choice(regionNames)
-    else:
-        print("multiRegion != True, not ranomizing")
-        session=boto3.session.Session()
-        randRegion=session.region_name
-    print ("\nTarget Region is: ", randRegion)
-    print("Randomizing the Availability Zone in ",randRegion)
-    randClient = boto3.client('ec2', region_name=randRegion)
-    zones = randClient.describe_availability_zones()['AvailabilityZones']
-    zoneNames = []
-    for zone in zones:
-        zone_name=zone['ZoneName']
-        zoneNames.append(zone_name)
-    randZone = random.choice(zoneNames)
-    print("Our randomized target availability zone is", randZone)
-'''
-
 # function to identify availability zone
 def az_func():
     ec2r = boto3.resource('ec2', region_name)
@@ -111,9 +73,9 @@ def az_func():
     az = i.placement['AvailabilityZone']
     allAZs.append(az)
     
+# function to list all instances 
 def inst_func():
     global instIds
-    global ec2
     global inst_name
     ec2r = boto3.resource('ec2', region_name=region_name)
     instances = ec2r.instances.filter(
@@ -138,7 +100,6 @@ def asgInst_func():
     # we capture this by outputting all instances in our target AZ and filtering on the aboce Key with a wildcard Value.
     # we also only want to instances in a steady or 'running' state.
     global asgInstIds
-    #ec2 = boto3.resource('ec2')
     asgInstances = ec2.instances.filter(
         Filters=[
             {
@@ -161,8 +122,8 @@ def asgInst_func():
     print ("\nASG deployed instances targeted for termination in", randAZ)
     print ("\n".join(asgInstIds))
 
+# function to diff the lists using set() and print output 
 def diffInst_func():
-    # Now diff the lists using set() and print output 
     global nonAsg
     nonAsg=(set(instIds)-set(asgInstIds))
     print ("\nInstances safe from the gorilla.")
@@ -181,9 +142,7 @@ def lambda_handler(event, context):
         #return error_code
         raise Exception('multiRegion = True is required for multiAZ')
     
-    # call function to randomize AZ
-    #az_func()
-    #randTarget_func()
+    # call function to randomize region and AZ
     regions_func()
     
     ec2 = boto3.resource('ec2')
