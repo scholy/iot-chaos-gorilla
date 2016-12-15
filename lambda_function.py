@@ -145,6 +145,7 @@ def asgInst_func():
     # we capture this by outputting all instances in our target AZ and filtering on the aboce Key with a wildcard Value.
     # we also only want to instances in a steady or 'running' state.
     global asgInstIds
+    ec2 = boto3.resource('ec2')
     asgInstances = ec2.instances.filter(
         Filters=[
             {
