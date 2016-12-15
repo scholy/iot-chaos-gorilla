@@ -2,22 +2,16 @@ from __future__ import print_function
 
 '''
 TODO: White setup/howto in here...
-
 Multi-Region: the apparent behavior of lambda when describing ec2 availablity zones (boto3 ~ client.describe_availability_zones) 
 is to return only the AZ's for the region the lambda functions is running in, likely the results of the reserved variable 
 AWS_DEFAULT_REGION and/or AWS_REGION. Either way, the returned results are limited to the 'local' region. 
 Setting multiAZ = 'True' will allow the gorilla to spread his wings and go global.
-
 Multi-AZ: Not yet implemented. TODO ... modify randTarget function to allow 1 target AZ per region
-
 SETUP REQUIRED:
 When configure your lambda function, create 2 environment variables called multiRegion and multiAZ. failure to set the variables results in a
 module load error.
-
 Describing regions and zones in the region (especially remote regions) takes time, if you see timeout errors, increase the lambda_function 
 timesout settings unders 'Advanced' on the Configuratin tab. 
-
-
 '''
 
 import boto3
@@ -85,7 +79,6 @@ def zone_func():
         zone_name=zone['ZoneName']
         zoneNames.append(zone_name)
     print("\n".join(zoneNames))
-
 # function to randomize both region and zone
 def randTarget_func():    
     global randRegion
@@ -122,8 +115,8 @@ def inst_func():
     global instIds
     global ec2
     global inst_name
-    ec2 = boto3.resource('ec2', region_name=region_name)
-    instances = ec2.instances.filter(
+    ec2r = boto3.resource('ec2', region_name=region_name)
+    instances = ec2r.instances.filter(
         Filters=[
             {
                 'Name': 'instance-state-name',
@@ -145,7 +138,7 @@ def asgInst_func():
     # we capture this by outputting all instances in our target AZ and filtering on the aboce Key with a wildcard Value.
     # we also only want to instances in a steady or 'running' state.
     global asgInstIds
-    ec2 = boto3.resource('ec2')
+    #ec2 = boto3.resource('ec2')
     asgInstances = ec2.instances.filter(
         Filters=[
             {
